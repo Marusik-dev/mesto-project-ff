@@ -1,3 +1,5 @@
+import {clearForm} from '../index.js'
+
 function openPopup(popupElement) {
     popupElement.classList.remove('popup_is-animated');
     popupElement.classList.add('popup_is-opened');
@@ -11,13 +13,6 @@ function handleEscKey(evt) {
             closePopup(openedPopup);
         }
   }
-}
-
-function clearForm(popupElement) {
-    const form = popupElement.querySelector('.popup__form');
-    if(form) {
-        form.reset();
-    }
 }
 
 function closePopup(popupElement) {
