@@ -1,5 +1,3 @@
-import {closePopup} from './modal.js'
-
 const initialCards = [
     {
       name: "Архыз",

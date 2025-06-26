@@ -1,5 +1,3 @@
-import {clearForm} from '../index.js'
-
 function openPopup(popupElement) {
     popupElement.classList.remove('popup_is-animated');
     popupElement.classList.add('popup_is-opened');
@@ -19,7 +17,6 @@ function closePopup(popupElement) {
     popupElement.classList.remove('popup_is-opened');
     popupElement.classList.add('popup_is-animated');
     document.removeEventListener('keydown', handleEscKey);
-    clearForm(popupElement);
 };
 
 function closePopupByOverlay(evt, popElement) {
