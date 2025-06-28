@@ -9,7 +9,7 @@ const popupProfile = document.querySelector('.popup_type_edit');
 const popupAddNewCard = document.querySelector('.popup_type_new-card');
 const buttonOpenPopupProfile = document.querySelector('.profile__edit-button');
 const buttonOpenPopupAddNewCard = document.querySelector('.profile__add-button');
-const buttonClosePopup = document.querySelectorAll('.popup__close');
+const popupCloseButtons = document.querySelectorAll('.popup__close');
 const formProfile = document.querySelector('.popup_type_edit .popup__form');
 const formAddNewCard = document.querySelector('.popup_type_new-card .popup__form');
 const popupFullImageContainer = document.querySelector('.popup_type_image');
@@ -38,6 +38,7 @@ function handleCardFormSubmit(evt) {
     const cardElement = createCard(cardItem, deleteCard, handleLikeCard, handleCardImage);
     cardContainer.prepend(cardElement);
     closePopup(popupAddNewCard);
+    clearForm(formAddNewCard);
 }
 
 function clearForm(form) {
@@ -70,14 +71,11 @@ buttonOpenPopupAddNewCard.addEventListener('click', function (evt) {
     openPopup(popupAddNewCard);
 }); 
 
-buttonClosePopup.forEach(function(button) {
+popupCloseButtons.forEach(function(button) {
     button.addEventListener('click', function(evt) {
         const popup = this.closest('.popup');
         const form = popup.querySelector('.popup__form');
         closePopup(popup);
-        if(form) {
-            clearForm(form);
-        }
     });
 });
 
