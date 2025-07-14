@@ -1,7 +1,8 @@
 import './pages/index.css' ;
-import { initialCards } from './scripts/cards.js';
 import { createCard, deleteCard, handleLikeCard } from './scripts/card.js';
 import { openPopup, closePopup, closePopupByOverlay } from './scripts/modal.js'
+import { validationConfig, enableValidation, clearValidation } from './scripts/validation.js'
+import { fetchUserData, fetchCards, fetchProfile, fetchCard, fetchDeleteCard, fetchUpdateAvatar } from './scripts/api.js'
 
 
 const cardContainer = document.querySelector('.places__list');
@@ -21,6 +22,15 @@ const profileDescription = document.querySelector('.profile__description');
 const descriptionInput = document.querySelector('.popup__input_type_description');
 const popupFullImage = popupFullImageContainer.querySelector('.popup__image');
 const popupImageNameCaption = popupFullImageContainer.querySelector('.popup__caption');
+const profileImage = document.querySelector('.profile__image');
+const popupDeleteCard = document.querySelector('.popup_delete_card');
+const buttonDeleteCard = document.querySelector('.popup_delete_card .popup__button');
+const popupUpdateAvatar = document.querySelector('.popup_update_avatar');
+const formChangeAvatar = document.querySelector('.popup_update_avatar .popup__form')
+let initialCards = [];
+let currentUserId = null;
+let cardToDelete = null;
+
 
 function handleCardImage(card) {
     openPopup(popupFullImageContainer)
@@ -29,16 +39,51 @@ function handleCardImage(card) {
     popupImageNameCaption.textContent = card.name;
 }
 
+function openDeletePopup(cardElement, cardId) {
+    cardToDelete = { element: cardElement, id: cardId };
+    openPopup(popupDeleteCard);
+}
+
 function handleCardFormSubmit(evt) {
     evt.preventDefault();
-    const cardItem = {
-      name: cardNameInput.value.trim(),
-      link: cardLinkInput.value.trim()
-    };
-    const cardElement = createCard(cardItem, deleteCard, handleLikeCard, handleCardImage);
-    cardContainer.prepend(cardElement);
-    closePopup(popupAddNewCard);
-    clearForm(formAddNewCard);
+    const submitButton = evt.submitter;
+    renderLoading(submitButton, true);
+
+    fetchCard(cardNameInput.value.trim(), cardLinkInput.value.trim())
+    .then((res) => {
+        const cardElement = createCard(res, openDeletePopup, handleLikeCard, handleCardImage, currentUserId);
+        cardContainer.prepend(cardElement);
+        closePopup(popupAddNewCard);
+        clearForm(formAddNewCard);
+    })
+    .catch((err) => {
+        console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+        renderLoading(submitButton, false);
+    });
+}
+
+function handleChangeAvatarFormSubmit(evt) {
+    evt.preventDefault();
+    const submitButton = evt.submitter;
+    renderLoading(submitButton, true);
+
+    const avatarLinkInput = formChangeAvatar.querySelector('.popup__input_type_url');
+    const avatarUrl = avatarLinkInput.value.trim();
+
+    fetchUpdateAvatar(avatarUrl)
+    .then((res) => {
+        profileImage.style.backgroundImage = `url('${res.avatar}')`;
+        closePopup(popupUpdateAvatar);
+        clearForm(formChangeAvatar);
+    })
+    .catch((err) => {
+        console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+        renderLoading(submitButton, false);
+    });
 }
 
 function clearForm(form) {
@@ -49,19 +94,72 @@ function fillFormFileds(targetInput, sourceData) {
     targetInput.value = sourceData.textContent.trim();
 }
 
-function handleFrofileFormSubmit(evt) {
+function handleProfileFormSubmit(evt) {
     evt.preventDefault();
-    profileTitle.textContent = nameInput.value.trim();
-    profileDescription.textContent = descriptionInput.value.trim();
-    closePopup(popupProfile);
+    const submitButton = evt.submitter;
+    renderLoading(submitButton, true);
+
+    fetchProfile(nameInput.value.trim(), descriptionInput.value.trim())
+    .then((res) => {
+        profileTitle.textContent = res.name;
+        profileDescription.textContent = res.about;
+        closePopup(popupProfile);
+    })
+    .catch((err) => {
+        console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+        renderLoading(submitButton, false);
+    });
 }
 
-initialCards.forEach((item) => {
-    const cardElement = createCard(item, deleteCard, handleLikeCard, handleCardImage);
-    cardContainer.append(cardElement);
- });
+function deleteSelectedCard(evt) {
+    evt.preventDefault();
+    if (cardToDelete) {
+        fetchDeleteCard(cardToDelete.id)
+        .then(() => {
+            deleteCard(cardToDelete.element);
+            closePopup(popupDeleteCard);
+            cardToDelete = null;
+        })
+        .catch((err) => {
+            console.log(`Ошибка: ${err}`);
+    });
+    }
+}
+
+function renderLoading(buttonElement, isLoading) {
+  if (isLoading) {
+    buttonElement.textContent = 'Сохранение...';
+    buttonElement.disabled = true;
+  } else {
+    buttonElement.textContent = 'Сохранить';
+    buttonElement.disabled = false;
+  }
+}
+
+function renderInitialData() {
+    Promise.all([fetchUserData(), fetchCards()])
+    .then(([userData, cardsData]) => {
+        profileTitle.textContent = userData.name;
+        profileDescription.textContent = userData.about;
+        profileImage.style.backgroundImage = `url('${userData.avatar}')`;
+        currentUserId = userData._id;
+
+        initialCards = cardsData;
+        cardContainer.innerHTML = '';            
+        initialCards.forEach((item) => {
+            const cardElement = createCard(item, openDeletePopup, handleLikeCard, handleCardImage, currentUserId);
+            cardContainer.append(cardElement);
+        });
+    })
+    .catch((err) => {
+        console.log(`Ошибка загрузки данных: ${err}`);
+    });
+}
 
 buttonOpenPopupProfile.addEventListener('click', function (evt) {
+    clearValidation(formProfile, validationConfig);
     openPopup(popupProfile);
     fillFormFileds(nameInput, profileTitle);
     fillFormFileds(descriptionInput, profileDescription);
@@ -91,6 +189,15 @@ popupFullImageContainer.addEventListener('click', function(evt) {
     closePopupByOverlay(evt, popupFullImageContainer);
 });
 
-formProfile.addEventListener('submit', handleFrofileFormSubmit);
+formProfile.addEventListener('submit', handleProfileFormSubmit);
 
 formAddNewCard.addEventListener('submit', handleCardFormSubmit);
+
+buttonDeleteCard.addEventListener('click', deleteSelectedCard);
+
+profileImage.addEventListener('click', () => openPopup(popupUpdateAvatar));
+
+formChangeAvatar.addEventListener('submit', handleChangeAvatarFormSubmit)
+
+renderInitialData();
+enableValidation(validationConfig);
