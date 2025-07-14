@@ -1,7 +1,7 @@
 import './pages/index.css' ;
 import { createCard, deleteCard, handleLikeCard } from './scripts/card.js';
 import { openPopup, closePopup, closePopupByOverlay } from './scripts/modal.js'
-import { validationConfig, enableValidation, clearValidation } from './scripts/validation.js'
+import { enableValidation, clearValidation } from './scripts/validation.js'
 import { fetchUserData, fetchCards, fetchProfile, fetchCard, fetchDeleteCard, fetchUpdateAvatar } from './scripts/api.js'
 
 
@@ -26,7 +26,15 @@ const profileImage = document.querySelector('.profile__image');
 const popupDeleteCard = document.querySelector('.popup_delete_card');
 const buttonDeleteCard = document.querySelector('.popup_delete_card .popup__button');
 const popupUpdateAvatar = document.querySelector('.popup_update_avatar');
-const formChangeAvatar = document.querySelector('.popup_update_avatar .popup__form')
+const formChangeAvatar = document.querySelector('.popup_update_avatar .popup__form');
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+};
 let initialCards = [];
 let currentUserId = null;
 let cardToDelete = null;
@@ -159,6 +167,7 @@ function renderInitialData() {
 }
 
 buttonOpenPopupProfile.addEventListener('click', function (evt) {
+    clearForm(formProfile);
     clearValidation(formProfile, validationConfig);
     openPopup(popupProfile);
     fillFormFileds(nameInput, profileTitle);
@@ -166,6 +175,8 @@ buttonOpenPopupProfile.addEventListener('click', function (evt) {
 });
 
 buttonOpenPopupAddNewCard.addEventListener('click', function (evt) {
+    clearForm(formAddNewCard);
+    clearValidation(formAddNewCard, validationConfig);
     openPopup(popupAddNewCard);
 }); 
 
@@ -189,13 +200,25 @@ popupFullImageContainer.addEventListener('click', function(evt) {
     closePopupByOverlay(evt, popupFullImageContainer);
 });
 
+popupUpdateAvatar.addEventListener('click', function(evt) {
+    closePopupByOverlay(evt, popupUpdateAvatar);
+});
+
+popupDeleteCard.addEventListener('click', function(evt) {
+    closePopupByOverlay(evt, popupDeleteCard);
+});
+
 formProfile.addEventListener('submit', handleProfileFormSubmit);
 
 formAddNewCard.addEventListener('submit', handleCardFormSubmit);
 
 buttonDeleteCard.addEventListener('click', deleteSelectedCard);
 
-profileImage.addEventListener('click', () => openPopup(popupUpdateAvatar));
+profileImage.addEventListener('click', () => {
+  clearForm(formChangeAvatar);
+  clearValidation(formChangeAvatar, validationConfig);
+  openPopup(popupUpdateAvatar);
+});
 
 formChangeAvatar.addEventListener('submit', handleChangeAvatarFormSubmit)
 

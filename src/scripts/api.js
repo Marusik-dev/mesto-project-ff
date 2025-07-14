@@ -1,138 +1,91 @@
 const token = '82ad33b1-627a-4794-8bca-a281fc48356a';
-const server = 'https://nomoreparties.co/v1/wff-cohort-42'
+const server = 'https://nomoreparties.co/v1/wff-cohort-42';
+const config = {
+  baseUrl: 'https://nomoreparties.co/v1/wff-cohort-42',
+  headers: {
+    authorization: '82ad33b1-627a-4794-8bca-a281fc48356a',
+    "Content-Type": "application/json"
+  },
+};
+
+function getResponseData(res) {
+    if (!res.ok) {
+        return Promise.reject(`Ошибка: ${res.status}`); 
+    }
+    return res.json();
+}
 
 function fetchUserData() {
-    return fetch(server + '/users/me', {
-        headers: {
-            authorization: token
-        }
+    return fetch(config.baseUrl + '/users/me', {
+        headers: config.headers
     })
-    .then((res) => {
-      if (res.ok) {
-            return res.json();
-      }
-      return Promise.reject(res.status);
-    })    
+    .then(getResponseData)
 }
 
 function fetchCards() {
-    return fetch(server + '/cards', {
-        headers: {
-            authorization: token
-        }
+    return fetch(config.baseUrl + '/cards', {
+        headers: config.headers
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-      }
-        return Promise.reject(res.status);
-    })    
+    .then(getResponseData) 
 }
 
 function fetchProfile(nameValue, aboutValue) {
-    return fetch(server + '/users/me', {
+    return fetch(config.baseUrl + '/users/me', {
         method: 'PATCH',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        },
+        headers: config.headers,
         body: JSON.stringify({
             name: nameValue,
             about: aboutValue
         })
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-      }
-        return Promise.reject(res.status);
-    })
+    .then(getResponseData)
 }
 
 function fetchCard(nameValue, linkValue) {
-    return fetch(server + '/cards', {
+    return fetch(config.baseUrl + '/cards', {
         method: 'POST',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        },
+        headers: config.headers,
         body: JSON.stringify({
             name: nameValue,
             link: linkValue
         })
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-      }
-        return Promise.reject(res.status);
-    })
+    .then(getResponseData)
 }
 
 function fetchDeleteCard(cardId) {
-    return fetch(server + '/cards/' + cardId, {
+    return fetch(config.baseUrl + '/cards/' + cardId, {
         method: 'DELETE',
-        headers: {
-            authorization: token
-        }
+        headers: config.headers,
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-      }
-        return Promise.reject(res.status);
-    })
+    .then(getResponseData)
 }
 
 function fetchLikeCard(cardId) {
-    return fetch(server + '/cards/likes/' + cardId, {
+    return fetch(config.baseUrl + '/cards/likes/' + cardId, {
         method: 'PUT',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        }
+        headers: config.headers
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-      }
-        return Promise.reject(res.status);
-    })
+    .then(getResponseData)
 }
 
 function fetchUnlikeCard(cardId) {
-    return fetch(server + '/cards/likes/' + cardId, {
+    return fetch(config.baseUrl + '/cards/likes/' + cardId, {
         method: 'DELETE',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        }
+        headers: config.headers
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-      }
-        return Promise.reject(res.status);
-    })
+    .then(getResponseData)
 }
 
 function fetchUpdateAvatar(link) {
-    return fetch(server + '/users/me/avatar', {
+    return fetch(config.baseUrl + '/users/me/avatar', {
         method: 'PATCH',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        },
+        headers: config.headers,
         body: JSON.stringify({
             avatar: link
         })
     })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-      }
-        return Promise.reject(res.status);
-    })
+    .then(getResponseData)
 }
 
 export { fetchUserData, fetchCards, fetchProfile, fetchCard, fetchDeleteCard, fetchLikeCard, fetchUnlikeCard, fetchUpdateAvatar }; 
